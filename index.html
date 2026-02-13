@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>STADIUM AI - Predictor Pro</title>
+    <style>
+        :root { --primary: #38bdf8; --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; min-height: 100vh; justify-content: center; }
+        
+        .card { background: var(--card); padding: 25px; border-radius: 24px; width: 100%; max-width: 450px; text-align: center; border: 1px solid #334155; border-top: 8px solid var(--primary); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        h2 { margin: 0; color: var(--primary); font-size: 26px; text-transform: uppercase; letter-spacing: 2px; }
+        .tagline { font-size: 11px; opacity: 0.7; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .selector-group { text-align: left; margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-size: 11px; color: var(--primary); font-weight: bold; text-transform: uppercase; }
+        
+        select { width: 100%; padding: 14px; border-radius: 14px; background: #0f172a; color: white; border: 2px solid #334155; font-size: 16px; outline: none; transition: 0.3s; }
+        select:focus { border-color: var(--primary); }
+
+        .grid-params { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+
+        button.btn-analizar { background: var(--primary); color: #0f172a; border: none; padding: 18px; border-radius: 16px; font-weight: 900; cursor: pointer; width: 100%; font-size: 18px; margin-top: 20px; text-transform: uppercase; transition: 0.3s; box-shadow: 0 8px 20px rgba(56, 189, 248, 0.2); }
+        button.btn-analizar:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(56, 189, 248, 0.4); }
+        button.btn-analizar:active { transform: scale(0.98); }
+
+        #resultado { margin-top: 25px; padding: 25px; background: #ffffff; border-radius: 22px; display: none; border: 4px solid var(--primary); color: #0f172a; animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #vsText { font-weight: 800; color: #64748b; font-size: 13px; margin-bottom: 8px; text-transform: uppercase; }
+        #ganadorText { font-size: 22px; font-weight: 900; margin: 5px 0; color: #0f172a; }
+        #marcadorText { background: #0f172a; color: var(--primary); padding: 12px 25px; border-radius: 14px; font-weight: 800; font-size: 36px; margin-top: 15px; display: inline-block; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>STADIUM AI</h2>
+    <div class="tagline">Neural Predictor • 2026 Edition</div>
+    
+    <div class="selector-group">
+        <label>🏆 Competición</label>
+        <select id="ligaFiltro" onchange="cambiarLiga()">
+            <option value="fpc">🇨🇴 Liga BetPlay (Colombia)</option>
+            <option value="premier">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</option>
+            <option value="laliga">🇪🇸 LaLiga (España)</option>
+            <option value="bundesliga">🇩🇪 Bundesliga (Alemania)</option>
+            <option value="seriea">🇮🇹 Serie A (Italia)</option>
+            <option value="lpf">🇦🇷 Liga Profesional (Argentina)</option>
+            <option value="brasil">🇧🇷 Brasileirão (Brasil)</option>
+        </select>
+    </div>
+
+    <div class="selector-group"><label>🏠 Equipo Local</label><select id="local"></select></div>
+    <div class="selector-group"><label>🚌 Equipo Visitante</label><select id="visitante"></select></div>
+
+    <div class="grid-params">
+        <div class="selector-group">
+            <label>☁️ Clima</label>
+            <select id="clima">
+                <option value="1.0">☀️ Despejado</option>
+                <option value="0.92">🌧️ Lluvia</option>
+                <option value="0.88">🔥 Calor</option>
+            </select>
+        </div>
+        <div class="selector-group">
+            <label>🔥 Instancia</label>
+            <select id="importancia">
+                <option value="1.0">Regular</option>
+                <option value="1.15">Final</option>
+            </select>
+        </div>
+    </div>
+
+    <button class="btn-analizar" onclick="predecir()">Calcular Predicción</button>
+    
+    <div id="resultado">
+        <div id="vsText"></div>
+        <div id="ganadorText"></div>
+        <div id="marcadorText"></div>
+    </div>
+</div>
+
+<script>
+    const ligas = {
+        fpc: { fCasa: 1.32, equipos: {
+            "Millonarios": [1.6, 0.7, 1], "Santa Fe": [1.4, 0.6, 1], "Nacional": [1.5, 0.9, 0], "América": [1.5, 0.8, 0], "Junior": [1.5, 1.1, 0], "Tolima": [1.3, 0.8, 0], "Bucaramanga": [1.1, 0.6, 0], "Once Caldas": [1.2, 0.9, 1], "Internacional de Bogotá": [1.2, 1.0, 1], "Llaneros": [1.1, 0.9, 0], "Cúcuta Deportivo": [1.2, 1.1, 0], "Ind. Medellín": [1.3, 1.1, 0], "Deportivo Pereira": [1.2, 1.1, 0], "Fortaleza CEIF": [1.1, 1.0, 1], "Deportivo Cali": [1.1, 1.3, 0], "Pasto": [1.0, 1.1, 1], "Águilas Doradas": [1.1, 1.2, 0], "Boyacá Chicó": [0.9, 1.3, 1], "Jaguares": [0.8, 1.2, 0], "Alianza Valledupar": [0.9, 1.4, 0]
+        }},
+        premier: { fCasa: 1.18, equipos: {
+            "Man City": [2.4, 0.7], "Arsenal": [2.2, 0.6], "Liverpool": [2.3, 0.8], "Chelsea": [2.0, 1.1], "Aston Villa": [1.9, 1.0], "Newcastle": [1.8, 1.1], "Man United": [1.7, 1.2], "Tottenham": [1.9, 1.3], "Brighton": [1.8, 1.2], "Sunderland": [1.5, 1.3], "Fulham": [1.4, 1.3], "West Ham": [1.5, 1.4], "Bournemouth": [1.4, 1.4], "Crystal Palace": [1.3, 1.4], "Brentford": [1.4, 1.5], "Everton": [1.1, 1.3], "Leeds United": [1.4, 1.6], "Nottingham Forest": [1.2, 1.4], "Burnley": [1.1, 1.5], "Wolverhampton": [1.2, 1.6]
+        }},
+        laliga: { fCasa: 1.22, equipos: {
+            "Real Madrid": [2.4, 0.7], "Barcelona": [2.3, 0.8], "Atlético Madrid": [1.9, 0.6], "Girona": [2.0, 1.2], "Athletic Club": [1.8, 0.9], "Real Sociedad": [1.6, 0.8], "Real Betis": [1.7, 1.1], "Villarreal": [1.8, 1.3], "Osasuna": [1.3, 1.1], "Sevilla": [1.5, 1.3], "Valencia": [1.3, 1.2], "Celta de Vigo": [1.4, 1.4], "Getafe": [1.0, 1.0], "Mallorca": [1.1, 1.2], "Rayo Vallecano": [1.2, 1.4], "Espanyol": [1.2, 1.4], "Las Palmas": [1.1, 1.5], "Real Oviedo": [1.1, 1.3], "Valladolid": [1.0, 1.6], "Elche": [1.0, 1.5]
+        }},
+        bundesliga: { fCasa: 1.25, equipos: {
+            "Bayern Múnich": [2.6, 0.9], "Bayer Leverkusen": [2.3, 0.8], "RB Leipzig": [2.2, 1.0], "Borussia Dortmund": [2.2, 1.1], "VfB Stuttgart": [2.0, 1.1], "Eintracht Frankfurt": [1.9, 1.2], "Hoffenheim": [1.7, 1.5], "Friburgo": [1.6, 1.3], "Werder Bremen": [1.5, 1.4], "Wolfsburgo": [1.5, 1.5], "Augsburgo": [1.4, 1.5], "Mönchengladbach": [1.5, 1.6], "Mainz 05": [1.3, 1.4], "Hamburgo SV": [1.5, 1.4], "Heidenheim": [1.2, 1.4], "Unión Berlín": [1.0, 1.3], "St. Pauli": [1.1, 1.5], "Bochum": [1.1, 2.0]
+        }},
+        seriea: { fCasa: 1.20, equipos: {
+            "Inter de Milán": [2.2, 0.6], "Juventus": [1.8, 0.5], "AC Milan": [2.0, 0.9], "Napoli": [1.9, 1.0], "Atalanta": [2.1, 1.1], "AS Roma": [1.7, 1.0], "Lazio": [1.8, 1.1], "Fiorentina": [1.7, 1.1], "Bolonia": [1.5, 1.0], "Torino": [1.3, 1.0], "Genoa": [1.2, 1.2], "Monza": [1.1, 1.2], "Udinese": [1.2, 1.3], "Como": [1.3, 1.4], "Parma": [1.3, 1.5], "Verona": [1.2, 1.5], "Cagliari": [1.1, 1.4], "Lecce": [1.0, 1.5], "Sassuolo": [1.3, 1.6], "Cremonese": [1.1, 1.5]
+        }},
+        lpf: { fCasa: 1.28, equipos: {
+            "River Plate": [1.8, 0.7], "Boca Juniors": [1.7, 0.8], "Racing Club": [1.7, 1.0], "Talleres": [1.6, 0.9], "Vélez Sarsfield": [1.5, 0.7], "Estudiantes": [1.4, 0.8], "Huracán": [1.3, 0.7], "Independiente": [1.3, 0.9], "San Lorenzo": [1.1, 0.9], "Belgrano": [1.3, 1.1], "Newell's": [1.2, 1.1], "Rosario Central": [1.3, 1.2], "Lanús": [1.4, 1.2], "Gimnasia LP": [1.2, 1.3]
+        }},
+        brasil: { fCasa: 1.26, equipos: {
+            "Flamengo": [2.1, 0.8], "Palmeiras": [2.0, 0.7], "Botafogo": [1.9, 1.0], "Atlético Mineiro": [1.8, 1.1], "São Paulo": [1.7, 1.0], "Internacional": [1.7, 0.9], "Fluminense": [1.6, 1.2], "Grêmio": [1.6, 1.3], "Cruzeiro": [1.5, 1.1], "Fortaleza": [1.6, 1.2]
+        }}
+    };
+
+    function cambiarLiga() {
+        const ligaKey = document.getElementById('ligaFiltro').value;
+        const liga = ligas[ligaKey];
+        const sL = document.getElementById('local');
+        const sV = document.getElementById('visitante');
+        sL.innerHTML = ""; sV.innerHTML = "";
+        Object.keys(liga.equipos).sort().forEach(n => {
+            sL.add(new Option(n, n));
+            sV.add(new Option(n, n));
+        });
+    }
+
+    function poisson(k, lambda) {
+        let f = 1; for (let i = 1; i <= k; i++) f *= i;
+        return (Math.pow(lambda, k) * Math.exp(-lambda)) / f;
+    }
+
+    function predecir() {
+        const ligaKey = document.getElementById('ligaFiltro').value;
+        const liga = ligas[ligaKey];
+        const lN = document.getElementById('local').value;
+        const vN = document.getElementById('visitante').value;
+        const clima = parseFloat(document.getElementById('clima').value);
+        const imp = parseFloat(document.getElementById('importancia').value);
+        
+        if(lN === vN) return;
+        
+        const L = liga.equipos[lN];
+        const V = liga.equipos[vN];
+        
+        let fA = (ligaKey === 'fpc' && L[2] && !V[2]) ? 1.15 : 1.0;
+        const mL = (L[0] * V[1]) * liga.fCasa * fA * clima * imp;
+        const mV = (V[0] * L[1]) * (1 / fA) * clima * imp;
+
+        let pL = 0, pE = 0, pV = 0, maxP = 0, score = "0 - 0";
+        for (let i = 0; i <= 5; i++) {
+            for (let j = 0; j <= 5; j++) {
+                let p = poisson(i, mL) * poisson(j, mV);
+                if (i > j) pL += p; else if (i === j) pE += p; else pV += p;
+                if (p > maxP) { maxP = p; score = `${i} - ${j}`; }
+            }
+        }
+        
+        const res = document.getElementById('resultado');
+        res.style.display = 'block';
+        document.getElementById('vsText').innerText = `${lN} vs ${vN}`;
+        document.getElementById('ganadorText').innerText = pL > pV && pL > pE ? "GANA LOCAL" : pV > pL && pV > pE ? "GANA VISITANTE" : "EMPATE";
+        document.getElementById('marcadorText').innerText = score;
+        res.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    window.onload = cambiarLiga;
+</script>
+</body>
+</html>
