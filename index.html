@@ -35,7 +35,7 @@
 
 <div class="card">
     <h2>STADIUM AI</h2>
-    <div class="tagline">Neural Predictor • Edición 2026</div>
+    <div class="tagline">Neural Predictor • 2026 Edition</div>
     
     <div class="selector-group">
         <label>🏆 Competición</label>
@@ -48,8 +48,8 @@
         </select>
     </div>
 
-    <div class="selector-group"><label>🏠 Equipo Local</label><select id="local"></select></div>
-    <div class="selector-group"><label>🚌 Equipo Visitante</label><select id="visitante"></select></div>
+    <div class="selector-group"><label>🏠 Local</label><select id="local"></select></div>
+    <div class="selector-group"><label>🚌 Visitante</label><select id="visitante"></select></div>
 
     <div class="grid-params">
         <div class="selector-group">
@@ -64,12 +64,12 @@
             <label>🔥 Instancia</label>
             <select id="importancia">
                 <option value="1.0">Temporada Regular</option>
-                <option value="1.15">Gran Final / Clásico</option>
+                <option value="1.15">Final / Clásico</option>
             </select>
         </div>
     </div>
 
-    <button class="btn-analizar" onclick="predecir()">Calcular Predicción</button>
+    <button class="btn-analizar" onclick="predecir()">Analizar Partido</button>
     
     <div id="resultado">
         <div id="vsText"></div>
@@ -90,7 +90,7 @@
             "Real Madrid": [2.4, 0.7], "Barcelona": [2.3, 0.8], "Atlético Madrid": [1.9, 0.6], "Girona": [2.0, 1.2], "Athletic Club": [1.8, 0.9], "Real Sociedad": [1.6, 0.8], "Real Betis": [1.7, 1.1], "Villarreal": [1.8, 1.3], "Osasuna": [1.3, 1.1], "Sevilla": [1.5, 1.3], "Valencia": [1.3, 1.2], "Celta de Vigo": [1.4, 1.4], "Getafe": [1.0, 1.0], "Mallorca": [1.1, 1.2], "Rayo Vallecano": [1.2, 1.4], "Espanyol": [1.2, 1.4], "Las Palmas": [1.1, 1.5], "Real Oviedo": [1.1, 1.3], "Valladolid": [1.0, 1.6], "Elche": [1.0, 1.5]
         }},
         bundesliga: { fCasa: 1.25, equipos: {
-            "Bayern Múnich": [2.6, 0.9], "Bayer Leverkusen": [2.3, 0.8], "RB Leipzig": [2.2, 1.0], "Borussia Dortmund": [2.2, 1.1], "VfB Stuttgart": [2.0, 1.1], "Eintracht Frankfurt": [1.9, 1.2], "Hoffenheim": [1.7, 1.5], "Friburgo": [1.6, 1.3], "Werder Bremen": [1.5, 1.4], "Wolfsburgo": [1.5, 1.5], "Augsburgo": [1.4, 1.5], "Mönchengladbach": [1.5, 1.6], "Mainz 05": [1.3, 1.4], "Hamburgo SV": [1.5, 1.4], "Heidenheim": [1.2, 1.4], "Unión Berlín": [1.0, 1.3], "St. Pauli": [1.1, 1.5], "Bochum": [1.1, 2.0]
+            "FC Bayern München": [2.6, 0.9], "Borussia Dortmund": [2.2, 1.1], "Bayer 04 Leverkusen": [2.3, 0.8], "RB Leipzig": [2.2, 1.0], "VfB Stuttgart": [2.0, 1.1], "Eintracht Frankfurt": [1.9, 1.2], "SC Freiburg": [1.6, 1.3], "Borussia Mönchengladbach": [1.5, 1.6], "VfL Wolfsburg": [1.5, 1.5], "SV Werder Bremen": [1.5, 1.4], "TSG 1899 Hoffenheim": [1.7, 1.5], "1. FSV Mainz 05": [1.3, 1.4], "FC Augsburg": [1.4, 1.5], "1. FC Union Berlin": [1.0, 1.3], "FC St. Pauli": [1.1, 1.5], "1. FC Heidenheim 1846": [1.2, 1.4]
         }},
         seriea: { fCasa: 1.20, equipos: {
             "Inter de Milán": [2.2, 0.6], "Juventus": [1.8, 0.5], "AC Milan": [2.0, 0.9], "Napoli": [1.9, 1.0], "Atalanta": [2.1, 1.1], "AS Roma": [1.7, 1.0], "Lazio": [1.8, 1.1], "Fiorentina": [1.7, 1.1], "Bolonia": [1.5, 1.0], "Torino": [1.3, 1.0], "Genoa": [1.2, 1.2], "Monza": [1.1, 1.2], "Udinese": [1.2, 1.3], "Como": [1.3, 1.4], "Parma": [1.3, 1.5], "Verona": [1.2, 1.5], "Cagliari": [1.1, 1.4], "Lecce": [1.0, 1.5], "Sassuolo": [1.3, 1.6], "Cremonese": [1.1, 1.5]
@@ -122,12 +122,11 @@
         const clima = parseFloat(document.getElementById('clima').value);
         const imp = parseFloat(document.getElementById('importancia').value);
         
-        if(lN === vN) return;
+        if(lN === vN) return alert("Selecciona equipos distintos");
         
         const L = liga.equipos[lN];
         const V = liga.equipos[vN];
         
-        // El factor de altura (fA) solo aplica si es liga colombiana
         let fA = (ligaKey === 'fpc' && L[2] && !V[2]) ? 1.15 : 1.0;
         const mL = (L[0] * V[1]) * liga.fCasa * fA * clima * imp;
         const mV = (V[0] * L[1]) * (1 / fA) * clima * imp;
